@@ -5,7 +5,7 @@ const ctx = cvs.getContext("2d");
 // ADD BORDER TO CANVAS
 cvs.style.border = "1px solid #0ff";
 
-// MAKE LINE THIK WHEN DRAWING TO CANVAS
+// MAKE LINE THICK WHEN DRAWING TO CANVAS
 ctx.lineWidth = 3;
 
 // GAME VARIABLES AND CONSTANTS
@@ -39,20 +39,62 @@ function drawPaddle() {
   ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
 }
 
-// CONTROL THE PADDLE
+// CONTROL THE PADDLE WITH KEYBOARD
 document.addEventListener("keydown", function (event) {
-  if (event.keyCode == 37) {
+  if (event.keyCode === 37) {
     leftArrow = true;
-  } else if (event.keyCode == 39) {
+  } else if (event.keyCode === 39) {
     rightArrow = true;
   }
 });
 document.addEventListener("keyup", function (event) {
-  if (event.keyCode == 37) {
+  if (event.keyCode === 37) {
     leftArrow = false;
-  } else if (event.keyCode == 39) {
+  } else if (event.keyCode === 39) {
     rightArrow = false;
   }
+});
+
+// CONTROL THE PADDLE WITH TOUCH
+let touchStartX = 0;
+
+cvs.addEventListener("touchstart", function (event) {
+  touchStartX = event.touches[0].clientX - cvs.getBoundingClientRect().left;
+
+  // Determine initial direction based on touch position
+  if (touchStartX < paddle.x) {
+    leftArrow = true;
+    rightArrow = false;
+  } else if (touchStartX > paddle.x + paddle.width) {
+    rightArrow = true;
+    leftArrow = false;
+  }
+  event.preventDefault(); // Prevent default touch behavior
+});
+
+cvs.addEventListener("touchmove", function (event) {
+  const touchX = event.touches[0].clientX - cvs.getBoundingClientRect().left;
+
+  // Move paddle according to touch position
+  if (touchX < paddle.x) {
+    leftArrow = true;
+    rightArrow = false;
+  } else if (touchX > paddle.x + paddle.width) {
+    rightArrow = true;
+    leftArrow = false;
+  }
+
+  // Move the paddle to follow the touch
+  paddle.x = touchX - paddle.width / 2; // Center the paddle on touch
+  if (paddle.x < 0) paddle.x = 0; // Prevent paddle from going off the left edge
+  if (paddle.x + paddle.width > cvs.width) paddle.x = cvs.width - paddle.width; // Prevent paddle from going off the right edge
+
+  event.preventDefault(); // Prevent default touch behavior
+});
+
+cvs.addEventListener("touchend", function () {
+  leftArrow = false;
+  rightArrow = false;
 });
 
 // MOVE PADDLE
@@ -69,7 +111,7 @@ const ball = {
   x: cvs.width / 2,
   y: paddle.y - BALL_RADIUS,
   radius: BALL_RADIUS,
-  speed: 5, // Increased initial speed
+  speed: 10, // Increased initial speed
   dx: 3 * (Math.random() * 2 - 1),
   dy: -3,
 };
@@ -210,25 +252,20 @@ function ballBrickCollision() {
           SCORE += SCORE_UNIT;
 
           // Add slight randomness to ball direction after hitting brick
-          ball.dy = -ball.dy + (Math.random() * 0.5 - 0.25); // Randomize y direction a bit
-
-          // Increase speed on hitting brick
-          ball.speed *= 1.01; // Gradually increase speed
+          ball.dy = -ball.dy + (Math.random() - 0.5); // Randomize Y direction
+          ball.dx = ball.dx + (Math.random() - 0.5); // Randomize X direction
         }
       }
     }
   }
 }
 
-// Show game stats
-function showGameStats(text, textX, textY, img, imgX, imgY) {
-  // Draw text
-  ctx.fillStyle = "#FFF";
-  ctx.font = "25px Germania One";
-  ctx.fillText(text, textX, textY);
-
-  // Draw image
-  ctx.drawImage(img, imgX, imgY, (width = 25), (height = 25));
+// SHOW GAME STATS (SCORE AND LIVES)
+function showGameStats(stat, x, y, img, imgX, imgY) {
+  ctx.fillStyle = "#fff";
+  ctx.font = "20px Germania One";
+  ctx.fillText(stat, x, y);
+  ctx.drawImage(img, imgX, imgY, 25, 25);
 }
 
 // SHOW GAME OVER SCREEN
