@@ -349,6 +349,24 @@ function showYouLose(){
 }
 
 
+// TOUCH CONTROL HANDLER
+function handleTouchMove(event) {
+    const touchX = event.touches[0].clientX - cvs.getBoundingClientRect().left; // Get touch position relative to the canvas
+    paddle.x = touchX - paddle.width / 2; // Center the paddle on the touch point
+    
+    // Prevent paddle from going out of bounds
+    if (paddle.x < 0) {
+        paddle.x = 0;
+    } else if (paddle.x + paddle.width > cvs.width) {
+        paddle.x = cvs.width - paddle.width;
+    }
+}
+
+// Add touch event listeners
+cvs.addEventListener("touchmove", handleTouchMove);
+cvs.addEventListener("touchstart", function (event) {
+    event.preventDefault(); // Prevent default touch behavior
+});
 
 
 
